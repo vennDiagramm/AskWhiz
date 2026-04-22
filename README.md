@@ -12,49 +12,7 @@ askwhiz/
 ├── faiss.index              # FAISS vector index (add this)
 └── static/
     └── index.html           # Chat frontend
+    └── Whizzy.png           # Avatar Picutre  
 ```
 
-## Setup
-
-### 1. Add your data files
-Place these in the root folder:
-- `Askwhiz_embeddings.json`
-- `faiss.index`
-
-### 2. Set environment variables
-```bash
-export OPENAI_API_KEY=your_openai_key
-export ANTHROPIC_API_KEY=your_anthropic_key
-```
-
-### 3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Run locally
-```bash
-uvicorn main:app --reload
-```
-Then open http://localhost:8000
-
-## Deploy to Render
-
-1. Push this folder to a GitHub repository
-2. Go to https://render.com and create a new **Web Service**
-3. Connect your GitHub repo
-4. Set the following:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Add environment variables:
-   - `OPENAI_API_KEY`
-   - `ANTHROPIC_API_KEY`
-6. Deploy!
-
-## API Endpoints
-- `GET /` — Chat interface
-- `GET /health` — System status
-- `POST /ask` — Ask a question
-  ```json
-  { "question": "When does enrollment begin?" }
-  ```
+***In Progress***
