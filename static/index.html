@@ -405,7 +405,11 @@
 
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-    avatar.textContent = role === 'user' ? 'You' : 'AW';
+    if (role === 'user') {
+      avatar.textContent = 'You';
+    } else {
+      avatar.innerHTML = '<img src="/static/Whizzy.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
+    }
 
     const bubble  = document.createElement('div');
     bubble.className = 'bubble';
@@ -433,7 +437,7 @@
 
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-    avatar.textContent = 'AW';
+    avatar.innerHTML = '<img src="/static/Whizzy.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
 
     const bubble  = document.createElement('div');
     bubble.className = 'bubble';
