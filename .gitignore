@@ -1,0 +1,4 @@
+.env
+askWhiz/
+__pycache__/
+*.pyc
