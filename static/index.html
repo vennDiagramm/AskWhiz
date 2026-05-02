@@ -363,6 +363,7 @@
       </svg>
     </button>
   </div>
+  <div id="input-error" style="font-size:11px;color:#ff4060;font-family:var(--font-mono);margin-top:4px;min-height:16px;text-align:center;"></div>
   <div class="input-hint">Powered by Hybrid RAG + Claude Haiku 4.5 · MMCM Official Sources Only</div>
 </div>
 
@@ -459,9 +460,25 @@
     if (typing) typing.remove();
   }
 
+  // Input error handling
+  const errorDiv = document.getElementById('input-error');
+  function showInputError(msg) {
+    errorDiv.textContent = msg;
+    setTimeout(() => { errorDiv.textContent = ''; }, 3000);
+  }
+
   async function sendMessage() {
     const question = input.value.trim();
-    if (!question || isLoading) return;
+    errorDiv.textContent = '';
+    if (isLoading) return;
+    if (!question) {
+      showInputError('Please enter a question before sending.');
+      return;
+    }
+    if (question.length > 500) {
+      showInputError('Question exceeds 500-character limit.');
+      return;
+    }
 
     isLoading = true;
     sendBtn.disabled = true;
@@ -480,8 +497,15 @@
 
       removeTyping();
 
+      // Handle rate limiting and validation errors
       if (res.status === 429) {
-        addMessage('bot', 'You\'re sending messages too quickly. Please wait a moment and try again.');
+        showInputError('Too many requests. Please wait before trying again.');
+        return;
+      }
+
+      if (res.status === 400) {
+        const err = await res.json();
+        showInputError(err.detail || 'Invalid input. Please check your question.');
         return;
       }
 
