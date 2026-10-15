@@ -2,7 +2,7 @@
 rag_core.py
 ===========
 AskWhiz — C9 RAG Pipeline
-Retrieval : Hybrid (Dense FAISS + Sparse BM25)
+Retrieval : Hybrid (Dense FAISS + Sparse BM25) / OpenSearch (for future scalability)
 LLM       : Claude Haiku 4.5 (Anthropic)
 """
 
@@ -11,6 +11,7 @@ import json
 import time
 import numpy as np
 import faiss
+from opensearchpy import OpenSearch
 from typing import List, Tuple
 from rank_bm25 import BM25Okapi          # pip install rank-bm25
 
@@ -19,6 +20,8 @@ import anthropic
 
 from dotenv import load_dotenv
 load_dotenv()
+
+
 
 # ══════════════════════════════════════════════════════
 # CONFIG — set these as environment variables in production
@@ -33,6 +36,11 @@ ANTHROPIC_GEN_MODEL = "claude-haiku-4-5-20251001"
 TOP_K               = 5
 BM25_WEIGHT         = 0.4   # 40% BM25, 60% dense
 
+OPENSEARCH_URL   = os.environ.get("OPENSEARCH_URL", "")
+OPENSEARCH_USER  = os.environ.get("OPENSEARCH_USER", "")
+OPENSEARCH_PASS  = os.environ.get("OPENSEARCH_PASS", "")
+OPENSEARCH_INDEX = os.environ.get("OPENSEARCH_INDEX", "")
+
 openai_client    = OpenAI(api_key=OPENAI_API_KEY)
 anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
@@ -46,6 +54,9 @@ def load_documents(path: str) -> List[str]:
 
 documents = load_documents(DATA_FILE)
 print(f"[INIT] Loaded {len(documents)} document chunks.")
+
+
+"""
 
 # ══════════════════════════════════════════════════════
 # FAISS INDEX (Dense)
@@ -70,6 +81,112 @@ def build_or_load_index() -> faiss.Index:
 
 faiss_index = build_or_load_index()
 
+"""
+
+# ══════════════════════════════════════════════════════
+# OPENSEARCH CONNECTION AND INDEX
+# ══════════════════════════════════════════════════════
+opensearch_client = OpenSearch(
+    hosts=[OPENSEARCH_URL],
+    http_auth=(OPENSEARCH_USER, OPENSEARCH_PASS),
+    use_ssl=True,
+    verify_certs=True,
+    timeout=30
+)
+print("[INIT] Connected to OpenSearch")
+
+def build_or_load_opensearch_index():
+    """
+    If the index already exists and has data → use it.
+    If not → create it and ingest from AskWhiz_embeddings.json.
+    Mirrors the FAISS build_or_load_index() behavior.
+    """
+    # Check if index exists and has documents
+    if opensearch_client.indices.exists(index=OPENSEARCH_INDEX):
+        count = opensearch_client.count(index=OPENSEARCH_INDEX)["count"]
+        if count > 0:
+            print(f"[INIT] Loading existing OpenSearch index ({count} docs)...")
+            return
+        else:
+            print("[INIT] Index exists but is empty. Re-ingesting...")
+            opensearch_client.indices.delete(index=OPENSEARCH_INDEX)
+
+    # Create fresh index
+    print("[INIT] Creating OpenSearch index...")
+    index_body = {
+        "settings": {
+            "index": {
+                "knn": True,
+                "knn.algo_param.ef_search": 100
+            }
+        },
+        "mappings": {
+            "properties": {
+                "chunk_id"      : {"type": "keyword"},
+                "source"        : {"type": "text"},
+                "document_type" : {"type": "keyword"},
+                "audience"      : {"type": "keyword"},
+                "title"         : {"type": "text"},
+                "chunk_text"    : {"type": "text"},
+                "token_count"   : {"type": "integer"},
+                "embedding"     : {
+                    "type"      : "knn_vector",
+                    "dimension" : 1536,
+                    "method"    : {
+                        "name"       : "hnsw",
+                        "space_type" : "cosinesimil",
+                        "engine"     : "faiss"
+                    }
+                }
+            }
+        }
+    }
+    opensearch_client.indices.create(index=OPENSEARCH_INDEX, body=index_body)
+    print(f"[INIT] Index created: {OPENSEARCH_INDEX}")
+
+    # Ingest embeddings
+    print("[INIT] Ingesting AskWhiz_embeddings.json...")
+    with open("AskWhiz_embeddings.json", "r", encoding="utf-8") as f:
+        chunks = json.load(f)
+
+    print(f"[INIT] Loaded {len(chunks)} chunks — ingesting now...")
+    success = 0
+    failed  = 0
+
+    for chunk in chunks:
+        doc = {
+            "chunk_id"      : chunk["chunk_id"],
+            "source"        : chunk["source"],
+            "document_type" : chunk.get("document_type", "handbook"),
+            "audience"      : chunk["audience"],
+            "title"         : chunk["title"],
+            "chunk_text"    : chunk["chunk_text"],
+            "token_count"   : chunk["token_count"],
+            "embedding"     : chunk["embedding"]
+        }
+        try:
+            opensearch_client.index(
+                index=OPENSEARCH_INDEX,
+                id=chunk["chunk_id"],
+                body=doc
+            )
+            success += 1
+        except Exception as e:
+            print(f"  ❌ Failed: {chunk['chunk_id']} — {e}")
+            failed += 1
+
+    time.sleep(2)  # wait for index to refresh
+    count = opensearch_client.count(index=OPENSEARCH_INDEX)["count"]
+    print(f"[INIT] Ingestion complete — {count} docs in OpenSearch")
+
+# To know if OpenSearch is available at startup
+
+try:
+    build_or_load_opensearch_index()
+except Exception as e:
+    print(f"[WARN] OpenSearch unavailable at startup: {e}")
+    print("[WARN] App will start, but dense retrieval may fail until OpenSearch is reachable.")
+
 # ══════════════════════════════════════════════════════
 # BM25 INDEX (Sparse)
 # ══════════════════════════════════════════════════════
@@ -79,16 +196,37 @@ print("[INIT] BM25 index built.")
 # ══════════════════════════════════════════════════════
 # RETRIEVAL
 # ══════════════════════════════════════════════════════
-def embed_query(query: str) -> np.ndarray:
+def embed_query(query: str) -> list:
     result = openai_client.embeddings.create(model=EMBED_MODEL, input=[query])
-    vec = np.array([result.data[0].embedding], dtype="float32")
-    faiss.normalize_L2(vec)
-    return vec
+    return result.data[0].embedding
 
+
+def dense_retrieve(query: str, top_k: int) -> List[Tuple[str, float]]:
+    """Returns list of (chunk_id, score) from OpenSearch kNN."""
+    query_vector = embed_query(query)
+    search_body = {
+        "size": top_k,
+        "query": {
+            "knn": {
+                "embedding": {
+                    "vector": query_vector,
+                    "k"     : top_k
+                }
+            }
+        }
+    }
+    response = opensearch_client.search(index=OPENSEARCH_INDEX, body=search_body)
+    return [
+        (hit["_id"], hit["_score"])
+        for hit in response["hits"]["hits"]
+    ]
+
+""""
 def dense_retrieve(query: str, top_k: int) -> List[Tuple[int, float]]:
     query_vec = embed_query(query)
     scores, indices = faiss_index.search(query_vec, top_k)
     return list(zip(indices[0].tolist(), scores[0].tolist()))
+"""
 
 def sparse_retrieve(query: str, top_k: int) -> List[Tuple[int, float]]:
     scores = bm25_index.get_scores(query.lower().split())
@@ -104,19 +242,29 @@ def normalize(results: List[Tuple[int, float]]) -> dict:
     return {idx: (s - min_s) / span for idx, s in results}
 
 def hybrid_retrieve(query: str, top_k: int = TOP_K) -> List[str]:
-    """
-    Fuses Dense (FAISS) + Sparse (BM25) scores via weighted sum.
-    Both score sets are min-max normalized before fusion.
-    """
     dense_results  = dense_retrieve(query, top_k * 2)
     sparse_results = sparse_retrieve(query, top_k * 2)
 
     dense_norm  = normalize(dense_results)
     sparse_norm = normalize(sparse_results)
 
-    all_indices = set(dense_norm.keys()) | set(sparse_norm.keys())
+    # Convert dense chunk_ids back to int indices for fusion
+    chunk_id_to_idx = {}
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    for i, item in enumerate(data):
+        chunk_id_to_idx[item["chunk_id"]] = i
+
+    # Remap dense_norm keys from chunk_id strings → int indices
+    dense_norm_remapped = {
+        chunk_id_to_idx[k]: v
+        for k, v in dense_norm.items()
+        if k in chunk_id_to_idx
+    }
+
+    all_indices = set(dense_norm_remapped.keys()) | set(sparse_norm.keys())
     fused = {
-        idx: (1 - BM25_WEIGHT) * dense_norm.get(idx, 0.0)
+        idx: (1 - BM25_WEIGHT) * dense_norm_remapped.get(idx, 0.0)
              + BM25_WEIGHT * sparse_norm.get(idx, 0.0)
         for idx in all_indices
     }
