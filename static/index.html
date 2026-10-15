@@ -45,18 +45,6 @@
       flex-shrink: 0;
     }
 
-    .logo-ring {
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      background: var(--mmcm-red);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: -0.5px;
-      flex-shrink: 0;
-      box-shadow: 0 0 0 3px rgba(200,16,46,0.25);
-    }
-
     .header-text h1 {
       font-size: 17px;
       font-weight: 600;
@@ -71,8 +59,32 @@
       margin-top: 1px;
     }
 
-    .status-dot {
+    .header-actions {
       margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #new-chat-btn {
+      background: transparent;
+      border: 1px solid var(--mmcm-border);
+      color: var(--mmcm-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    #new-chat-btn:hover {
+      color: var(--mmcm-light);
+      border-color: var(--mmcm-red);
+      background: rgba(200,16,46,0.08);
+    }
+
+    .status-dot {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -100,7 +112,7 @@
       padding: 24px 16px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 22px;
       scroll-behavior: smooth;
     }
 
@@ -111,7 +123,7 @@
     /* ── MESSAGES ── */
     .message {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       animation: slide-up 0.25s ease-out;
       max-width: 760px;
       width: 100%;
@@ -122,8 +134,8 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .message.user  { align-self: flex-end; flex-direction: row-reverse; }
-    .message.bot   { align-self: flex-start; }
+    .message.user  { align-self: flex-end; flex-direction: row-reverse; align-items: flex-start; }
+    .message.bot   { align-self: flex-start; align-items: flex-start; }
 
     .avatar {
       width: 32px; height: 32px;
@@ -132,11 +144,13 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 12px;
       font-weight: 600;
+      margin-top: 2px;
     }
 
     .message.user .avatar {
       background: var(--mmcm-red);
       color: white;
+      box-shadow: 0 0 0 3px rgba(200,16,46,0.15);
     }
 
     .message.bot .avatar {
@@ -146,10 +160,10 @@
     }
 
     .bubble {
-      padding: 12px 16px;
+      padding: 14px 18px;
       border-radius: 16px;
       font-size: 14px;
-      line-height: 1.65;
+      line-height: 1.7;
       max-width: calc(100% - 48px);
     }
 
@@ -168,6 +182,76 @@
 
     .bubble p { margin-bottom: 8px; }
     .bubble p:last-child { margin-bottom: 0; }
+
+    .bubble ul, .bubble ol {
+      margin: 4px 0 8px 20px;
+    }
+    .bubble li { margin-bottom: 4px; }
+    .bubble ul:last-child, .bubble ol:last-child { margin-bottom: 0; }
+    .bubble strong { color: #fff; font-weight: 600; }
+    .message.user .bubble strong { color: #fff; }
+    .bubble code {
+      font-family: var(--font-mono);
+      background: rgba(255,255,255,0.08);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .bubble a { color: var(--mmcm-accent); }
+    .message.user .bubble a { color: #fff; text-decoration: underline; }
+
+    .bubble.error {
+      border-color: rgba(255,64,96,0.4);
+      background: rgba(255,64,96,0.08);
+    }
+
+    /* ── MESSAGE ACTIONS (copy / sources) ── */
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      padding-left: 44px;
+    }
+
+    .msg-action-btn {
+      background: none;
+      border: none;
+      color: var(--mmcm-muted);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      cursor: pointer;
+      padding: 2px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s ease;
+    }
+
+    .msg-action-btn:hover { color: var(--mmcm-light); }
+    .msg-action-btn svg { width: 11px; height: 11px; fill: currentColor; }
+
+    .sources-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin: 8px 0 0 44px;
+      max-width: 680px;
+    }
+
+    .sources-panel.open { display: flex; }
+
+    .source-chip {
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--mmcm-muted);
+      background: var(--mmcm-card);
+      border: 1px solid var(--mmcm-border);
+      border-left: 2px solid var(--mmcm-red);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+    }
 
     /* ── TYPING INDICATOR ── */
     .typing-indicator {
@@ -198,17 +282,6 @@
       text-align: center;
       padding: 32px 16px;
       max-width: 480px;
-    }
-
-    .welcome-logo {
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      background: var(--mmcm-red);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      font-weight: 700;
-      margin: 0 auto 20px;
-      box-shadow: 0 0 0 6px rgba(200,16,46,0.15), 0 0 0 12px rgba(200,16,46,0.07);
     }
 
     .welcome h2 {
@@ -290,6 +363,11 @@
       border-color: var(--mmcm-red);
     }
 
+    textarea:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     #send-btn {
       width: 46px; height: 46px;
       border-radius: 12px;
@@ -306,13 +384,32 @@
 
     #send-btn svg { width: 18px; height: 18px; fill: white; }
 
+    .input-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .input-hint {
       text-align: center;
       font-size: 10px;
       color: var(--mmcm-muted);
       font-family: var(--font-mono);
-      margin-top: 8px;
     }
+
+    .char-counter {
+      font-size: 10px;
+      color: var(--mmcm-muted);
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    .char-counter.warn { color: var(--mmcm-accent); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
@@ -325,20 +422,23 @@
 <body>
 
 <header>
-  <img src="/static/Whizzy.png" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+  <img src="/static/Whizzy.png" alt="Whizzy, the AskWhiz assistant" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
   <div class="header-text">
     <h1>AskWhiz</h1>
     <p>Mapúa Malayan Colleges Mindanao · Institutional Knowledge Chatbot</p>
   </div>
-  <div class="status-dot">
-    <div class="dot"></div>
-    <span>Online</span>
+  <div class="header-actions">
+    <button id="new-chat-btn" onclick="startNewChat()" aria-label="Start a new chat">New chat</button>
+    <div class="status-dot" role="status" aria-live="polite">
+      <div class="dot" aria-hidden="true"></div>
+      <span>Online</span>
+    </div>
   </div>
 </header>
 
-<div id="chat">
+<div id="chat" aria-live="polite" aria-relevant="additions">
   <div class="welcome" id="welcome">
-    <img src="/static/Whizzy.png" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+    <img src="/static/Whizzy.png" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
     <h2>Hello! I'm AskWhiz 👋</h2>
     <p>Your official AI assistant for Mapúa Malayan Colleges Mindanao. Ask me anything about enrollment, admissions, academic policies, scholarships, and more.</p>
     <div class="suggestions">
@@ -350,34 +450,145 @@
   </div>
 </div>
 
+<template id="welcome-template">
+  <div class="welcome" id="welcome">
+    <img src="/static/Whizzy.png" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+    <h2>Hello! I'm AskWhiz 👋</h2>
+    <p>Your official AI assistant for Mapúa Malayan Colleges Mindanao. Ask me anything about enrollment, admissions, academic policies, scholarships, and more.</p>
+    <div class="suggestions">
+      <button class="suggestion-btn" onclick="useSuggestion(this)">📅 When does enrollment for the next school year begin?</button>
+      <button class="suggestion-btn" onclick="useSuggestion(this)">🎓 What are the Latin Honors and their GWA requirements?</button>
+      <button class="suggestion-btn" onclick="useSuggestion(this)">📋 What are the admission requirements for new college students?</button>
+      <button class="suggestion-btn" onclick="useSuggestion(this)">💰 What scholarships are available at MMCM?</button>
+    </div>
+  </div>
+</template>
+
 <div class="input-area">
   <div class="input-wrap">
     <textarea
       id="input"
       placeholder="Ask about MMCM policies, enrollment, admissions..."
       rows="1"
+      aria-label="Ask a question"
+      maxlength="500"
     ></textarea>
-    <button id="send-btn" onclick="sendMessage()">
+    <button id="send-btn" onclick="sendMessage()" aria-label="Send message">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
       </svg>
     </button>
   </div>
-  <div id="input-error" style="font-size:11px;color:#ff4060;font-family:var(--font-mono);margin-top:4px;min-height:16px;text-align:center;"></div>
-  <div class="input-hint">Powered by Hybrid RAG + Claude Haiku 4.5 · MMCM Official Sources Only</div>
+  <div id="input-error" role="alert" style="font-size:11px;color:#ff4060;font-family:var(--font-mono);margin-top:4px;min-height:16px;text-align:center;"></div>
+  <div class="input-footer">
+    <div class="input-hint">Powered by Hybrid RAG + Claude Haiku 4.5 · MMCM Official Sources Only</div>
+    <span id="char-counter" class="char-counter">0/500</span>
+  </div>
 </div>
 
 <script>
-  const chat    = document.getElementById('chat');
-  const input   = document.getElementById('input');
-  const sendBtn = document.getElementById('send-btn');
+  const chat        = document.getElementById('chat');
+  const input       = document.getElementById('input');
+  const sendBtn     = document.getElementById('send-btn');
+  const charCounter = document.getElementById('char-counter');
+  const CHAR_LIMIT  = 500;
+  const HISTORY_KEY = 'askwhiz_history';
   let isLoading = false;
+
+  // ── Persistence ──
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveHistory(history) {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch {
+      // storage unavailable (private mode, quota) — fail silently
+    }
+  }
+
+  function startNewChat() {
+    saveHistory([]);
+    chat.innerHTML = '';
+    chat.appendChild(welcomeTemplate());
+  }
+
+  function welcomeTemplate() {
+    const tpl = document.getElementById('welcome-template');
+    return tpl.content.firstElementChild.cloneNode(true);
+  }
+
+  // ── Markdown (minimal, safe subset: bold, italics, links, lists) ──
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function inlineMarkdown(str) {
+    let out = escapeHtml(str);
+    out = out.replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+    out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+    return out;
+  }
+
+  function renderMarkdown(text) {
+    const lines = text.split('\n');
+    const html = [];
+    let listBuffer = [];
+    let listType = null;
+
+    function flushList() {
+      if (listBuffer.length) {
+        html.push(`<${listType}>` + listBuffer.map(li => `<li>${li}</li>`).join('') + `</${listType}>`);
+        listBuffer = [];
+        listType = null;
+      }
+    }
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) { flushList(); return; }
+
+      const bulletMatch   = trimmed.match(/^[-•*]\s+(.*)/);
+      const numberedMatch = trimmed.match(/^\d+[.)]\s+(.*)/);
+
+      if (bulletMatch) {
+        if (listType !== 'ul') { flushList(); listType = 'ul'; }
+        listBuffer.push(inlineMarkdown(bulletMatch[1]));
+      } else if (numberedMatch) {
+        if (listType !== 'ol') { flushList(); listType = 'ol'; }
+        listBuffer.push(inlineMarkdown(numberedMatch[1]));
+      } else {
+        flushList();
+        html.push(`<p>${inlineMarkdown(trimmed)}</p>`);
+      }
+    });
+    flushList();
+    return html.join('');
+  }
 
   // Auto-resize textarea
   input.addEventListener('input', () => {
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+    updateCharCounter();
   });
+
+  function updateCharCounter() {
+    const len = input.value.length;
+    charCounter.textContent = `${len}/${CHAR_LIMIT}`;
+    charCounter.classList.toggle('warn', len > CHAR_LIMIT * 0.9);
+  }
 
   // Enter to send (Shift+Enter for newline)
   input.addEventListener('keydown', (e) => {
@@ -392,6 +603,7 @@
     input.value = text;
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+    updateCharCounter();
     sendMessage();
   }
 
@@ -400,7 +612,15 @@
     if (welcome) welcome.remove();
   }
 
-  function addMessage(role, text) {
+  function copySvg() {
+    return '<svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
+  }
+
+  function sourcesSvg() {
+    return '<svg viewBox="0 0 24 24"><path d="M4 4h16v2H4zm0 7h16v2H4zm0 7h10v2H4z"/></svg>';
+  }
+
+  function addMessage(role, text, { sources = [], isError = false, persist = true } = {}) {
     removeWelcome();
     const msg    = document.createElement('div');
     msg.className = `message ${role}`;
@@ -408,27 +628,83 @@
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
     if (role === 'user') {
-      avatar.textContent = 'You';
+      avatar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>';
     } else {
-      avatar.innerHTML = '<img src="/static/Whizzy.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
+      avatar.innerHTML = '<img src="/static/Whizzy.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
     }
 
-    const bubble  = document.createElement('div');
-    bubble.className = 'bubble';
-
-    // Format text — split on newlines into paragraphs
-    const paragraphs = text.split('\n').filter(p => p.trim());
-    paragraphs.forEach(p => {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble' + (isError ? ' error' : '');
+    bubble.innerHTML = role === 'bot' ? renderMarkdown(text) : '';
+    if (role === 'user') {
       const para = document.createElement('p');
-      para.textContent = p;
+      para.textContent = text;
       bubble.appendChild(para);
-    });
+    }
 
     msg.appendChild(avatar);
     msg.appendChild(bubble);
     chat.appendChild(msg);
+
+    if (role === 'bot' && !isError) {
+      const meta = document.createElement('div');
+      meta.className = 'msg-meta';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'msg-action-btn';
+      copyBtn.innerHTML = copySvg() + '<span>Copy</span>';
+      copyBtn.setAttribute('aria-label', 'Copy answer to clipboard');
+      copyBtn.onclick = () => copyToClipboard(text, copyBtn);
+      meta.appendChild(copyBtn);
+
+      let panel = null;
+      if (sources.length) {
+        const sourcesBtn = document.createElement('button');
+        sourcesBtn.className = 'msg-action-btn';
+        sourcesBtn.innerHTML = sourcesSvg() + `<span>Sources (${sources.length})</span>`;
+        sourcesBtn.setAttribute('aria-expanded', 'false');
+
+        panel = document.createElement('div');
+        panel.className = 'sources-panel';
+        sources.forEach(src => {
+          const chip = document.createElement('div');
+          chip.className = 'source-chip';
+          chip.textContent = src;
+          panel.appendChild(chip);
+        });
+
+        sourcesBtn.onclick = () => {
+          const open = panel.classList.toggle('open');
+          sourcesBtn.setAttribute('aria-expanded', String(open));
+          chat.scrollTop = chat.scrollHeight;
+        };
+        meta.appendChild(sourcesBtn);
+      }
+
+      chat.appendChild(meta);
+      if (panel) chat.appendChild(panel);
+    }
+
     chat.scrollTop = chat.scrollHeight;
+
+    if (persist) {
+      const history = loadHistory();
+      history.push({ role, text, sources, isError });
+      saveHistory(history);
+    }
+
     return msg;
+  }
+
+  async function copyToClipboard(text, btn) {
+    try {
+      await navigator.clipboard.writeText(text);
+      const original = btn.innerHTML;
+      btn.innerHTML = copySvg() + '<span>Copied!</span>';
+      setTimeout(() => { btn.innerHTML = original; }, 1500);
+    } catch {
+      // clipboard API unavailable — fail silently
+    }
   }
 
   function addTyping() {
@@ -439,7 +715,7 @@
 
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-    avatar.innerHTML = '<img src="/static/Whizzy.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
+    avatar.innerHTML = '<img src="/static/Whizzy.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
 
     const bubble  = document.createElement('div');
     bubble.className = 'bubble';
@@ -460,11 +736,17 @@
     if (typing) typing.remove();
   }
 
-  // Input error handling
+  // Input error handling (validation issues tied directly to the input itself)
   const errorDiv = document.getElementById('input-error');
   function showInputError(msg) {
     errorDiv.textContent = msg;
     setTimeout(() => { errorDiv.textContent = ''; }, 3000);
+  }
+
+  function setBusy(busy) {
+    isLoading = busy;
+    sendBtn.disabled = busy;
+    input.disabled = busy;
   }
 
   async function sendMessage() {
@@ -475,15 +757,15 @@
       showInputError('Please enter a question before sending.');
       return;
     }
-    if (question.length > 500) {
-      showInputError('Question exceeds 500-character limit.');
+    if (question.length > CHAR_LIMIT) {
+      showInputError(`Question exceeds ${CHAR_LIMIT}-character limit.`);
       return;
     }
 
-    isLoading = true;
-    sendBtn.disabled = true;
+    setBusy(true);
     input.value = '';
     input.style.height = 'auto';
+    updateCharCounter();
 
     addMessage('user', question);
     addTyping();
@@ -510,22 +792,34 @@
       }
 
       if (!res.ok) {
-        addMessage('bot', 'Something went wrong on my end. Please try again.');
+        addMessage('bot', 'Something went wrong on my end. Please try again.', { isError: true });
         return;
       }
 
       const data = await res.json();
-      addMessage('bot', data.answer);
+      addMessage('bot', data.answer, { sources: data.sources || [] });
 
     } catch (err) {
       removeTyping();
-      addMessage('bot', 'I\'m having trouble connecting right now. Please check your connection and try again.');
+      addMessage('bot', 'I\'m having trouble connecting right now. Please check your connection and try again.', { isError: true });
     } finally {
-      isLoading = false;
-      sendBtn.disabled = false;
+      setBusy(false);
       input.focus();
     }
   }
+
+  // ── Restore previous session, if any ──
+  (function init() {
+    updateCharCounter();
+    const history = loadHistory();
+    if (history.length) {
+      history.forEach(item => addMessage(item.role, item.text, {
+        sources: item.sources || [],
+        isError: item.isError || false,
+        persist: false,
+      }));
+    }
+  })();
 </script>
 </body>
 </html>

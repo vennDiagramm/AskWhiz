@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import time
 
-from rag_core import ask
+from rag_core import ask_with_sources
 
 # ══════════════════════════════════════════════════════
 # APP SETUP
@@ -59,6 +59,7 @@ class QuestionRequest(BaseModel):
 class AnswerResponse(BaseModel):
     question: str
     answer:   str
+    sources:  list[str] = []
 
 # ══════════════════════════════════════════════════════
 # ROUTES
@@ -85,10 +86,15 @@ async def ask_question(request: Request, body: QuestionRequest):
         raise HTTPException(status_code=400, detail="Question too long. Please keep it under 500 characters.")
 
     try:
-        result = ask(question)
+        answer, chunks = ask_with_sources(question)
+        sources = [
+            (chunk[:220] + "…") if len(chunk) > 220 else chunk
+            for chunk in chunks
+        ]
         return AnswerResponse(
             question=question,
-            answer=result,
+            answer=answer,
+            sources=sources,
         )
     except Exception as e:
         print(f"ERROR: {e}")

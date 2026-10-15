@@ -199,10 +199,19 @@ def ask(question: str) -> str:
     runs the C9 Hybrid RAG pipeline,
     and returns the answer string.
     """
+    answer, _ = ask_with_sources(question)
+    return answer
+
+def ask_with_sources(question: str) -> Tuple[str, List[str]]:
+    """
+    Same as ask(), but also returns the retrieved chunks
+    so callers (e.g. the API) can surface them as citations.
+    """
     print("[Config: C9] Retrieval=HYBRID  LLM=ANTHROPIC")
     chunks = hybrid_retrieve(question)
     prompt = build_cot_prompt(question, chunks)
-    return generate(prompt)
+    answer = generate(prompt)
+    return answer, chunks
 
 def run_batch(test_dataset_path: str, output_path: str):
     """

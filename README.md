@@ -15,4 +15,3 @@ askwhiz/
     └── Whizzy.png           # Avatar Picutre  
 ```
 
-***In Progress***
